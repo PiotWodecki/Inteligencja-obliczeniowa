@@ -20,12 +20,14 @@ namespace IO
         public int[] selectedParent1 { get; set; }
         public int[] selectedParent2 { get; set; }
         public int leastSum { get; set; }
+        public double probabilityOfMutation { get; set; }
         public int[] orderOfLeastSum { get; set; }
         public int[] minSumOrder { get; set; }
         public int minSum { get; set; }
         public Dictionary<int[], int> population { get; set; }
         Excel excel = new Excel(@"E:\studia\V semestr\IO\Algorytmy genetyczne\genetykcs5.xls", 1);
         public delegate int PopulateColumnReadSum(int start, int end, int column, int[] ar, int arCount);
+        Random random = new Random();
 
         public GeneticAlgorithm()
         {
@@ -37,6 +39,8 @@ namespace IO
             population = new Dictionary<int[], int>();
             rowOfSumExcel = 69;
             colOfSumExcel = 26;
+            minSum = 999999;
+            probabilityOfMutation = 0.1;
         }
 
         public void ReadOrderColumn()
@@ -250,13 +254,116 @@ namespace IO
                         }
                         population.Remove(population.ElementAt(numberInPopulation).Key);
                         population.Add(selectedParent2.ToArray(), excel.WriteToColumnFromArrayIntsAndReadSum(startingRow, endingRow, kolumnazUszeregowaniem, colOfSumExcel, selectedParent2.ToList(), selectedParent1.Length));
-                        minSum = population.OrderBy(x => x.Value).First().Value;
-                        minSumOrder = population.OrderBy(x => x.Value).First().Key;
+                        if (minSum > population.OrderBy(x => x.Value).First().Value)
+                        {
+                            minSum = population.OrderBy(x => x.Value).First().Value;
+                            minSumOrder = population.OrderBy(x => x.Value).First().Key;
+                        }
                         numberInPopulation++;
                         break;
                     }
                 }
             }
+        }
+
+        public void MakingChilds()
+        {
+            int currentIndex = 0;
+            int[] tmpChild;
+            int[] tmpChild2;
+            List<int> valuesFromParent2;
+            List<int> valuesFromParent1;
+            int crossoverPoint;
+
+            do
+            {
+                tmpChild = new int[uszeregowanieInt.Length];
+                tmpChild2 = new int[uszeregowanieInt.Length];
+                valuesFromParent2 = new List<int>();
+                valuesFromParent1 = new List<int>();
+                crossoverPoint = random.Next(startingRow + 1, endingRow - 3);
+
+                //dziecko1
+                for (int i = 0; i <= crossoverPoint; i++)
+                {
+                    tmpChild[i] = population.ElementAt(currentIndex).Key[i];
+                }
+
+                for (int ite = 0; ite < population.ElementAt(currentIndex).Key.Count(); ite++)
+                {
+                    int i = 0;
+                    if (!tmpChild.Contains(population.ElementAt(currentIndex + 1).Key[ite]))
+                    {
+                        valuesFromParent2.Insert(i, population.ElementAt(currentIndex + 1).Key[ite]);
+                        i++;
+                    }
+                }
+
+                int j = 0;
+                for (int i = crossoverPoint + 1; i < endingRow - 2; i++)
+                {
+                    tmpChild[i] = valuesFromParent2[j];
+                    j++;
+                }
+
+                if(random.NextDouble() < probabilityOfMutation)
+                {
+                    int tmpRand = random.Next(startingRow, endingRow - 3);
+                    int tmpRand2 = random.Next(startingRow, endingRow - 3);
+
+                    int tmp = tmpChild[tmpRand];
+                    tmpChild[tmpRand] = tmpChild[tmpRand2];
+                    tmpChild[tmpRand2] = tmp;
+                }
+
+                population.Remove(population.ElementAt(currentIndex).Key);
+                population.Add(tmpChild.ToArray(), excel.WriteToColumnFromArrayIntsAndReadSum(startingRow, endingRow, kolumnazUszeregowaniem, colOfSumExcel, tmpChild.ToList(), tmpChild.Length));
+
+                //dziecko2
+                for (int i = 0; i <= crossoverPoint; i++)
+                {
+                    tmpChild2[i] = population.ElementAt(currentIndex + 1).Key[i];
+                }
+
+                for (int ite = 0; ite < population.ElementAt(currentIndex + 1).Key.Count(); ite++)
+                {
+                    int i = 0;
+                    if (!tmpChild2.Contains(population.ElementAt(currentIndex).Key[ite]))
+                    {
+                        valuesFromParent1.Insert(i, population.ElementAt(currentIndex).Key[ite]);
+                        i++;
+                    }
+                }
+
+                j = 0;
+                for (int i = crossoverPoint + 1; i < endingRow - 2; i++)
+                {
+                    tmpChild2[i] = valuesFromParent1[j];
+                    j++;
+                }
+
+                if (random.NextDouble() < probabilityOfMutation)
+                {
+                    int tmpRand = random.Next(startingRow, endingRow - 3);
+                    int tmpRand2 = random.Next(startingRow, endingRow - 3);
+
+                    int tmp = tmpChild2[tmpRand];
+                    tmpChild2[tmpRand] = tmpChild2[tmpRand2];
+                    tmpChild2[tmpRand2] = tmp;
+                }
+
+                population.Remove(population.ElementAt(currentIndex+1).Key);
+                population.Add(tmpChild2.ToArray(), excel.WriteToColumnFromArrayIntsAndReadSum(startingRow, endingRow, kolumnazUszeregowaniem, colOfSumExcel, tmpChild2.ToList(), tmpChild2.Length));
+
+                currentIndex = currentIndex + 2;
+            } while (currentIndex < 10);
+
+            if (minSum > population.OrderBy(x => x.Value).First().Value)
+            {
+                minSum = population.OrderBy(x => x.Value).First().Value;
+                minSumOrder = population.OrderBy(x => x.Value).First().Key;
+            }
+
         }
        
         

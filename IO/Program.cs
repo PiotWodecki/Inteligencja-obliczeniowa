@@ -20,6 +20,7 @@ namespace IO
             ga.PopulateColumn();
             ga.PopulatePopulation();
             ga.SelectionRouletteWheel();
+            ga.MakingChilds();
             //ga.WriteToColumn();
             ga.CloseWithSaveAs(@"E:\studia\V semestr\IO\Algorytmy genetyczne\genetykcs4.xls");
             //excel.Quit();
