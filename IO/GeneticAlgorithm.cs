@@ -17,8 +17,15 @@ namespace IO
         public int rowOfSumExcel { get; set; }
         public int colOfSumExcel { get; set; }
         public int[] uszeregowanieInt { get; set; }
+        public int[] selectedParent1 { get; set; }
+        public int[] selectedParent2 { get; set; }
+        public int leastSum { get; set; }
+        public int[] orderOfLeastSum { get; set; }
+        public int[] minSumOrder { get; set; }
+        public int minSum { get; set; }
         public Dictionary<int[], int> population { get; set; }
-        Excel excel = new Excel(@"E:\studia\V semestr\IO\Algorytmy genetyczne\genetykcs3.xls", 1);
+        Excel excel = new Excel(@"E:\studia\V semestr\IO\Algorytmy genetyczne\genetykcs5.xls", 1);
+        public delegate int PopulateColumnReadSum(int start, int end, int column, int[] ar, int arCount);
 
         public GeneticAlgorithm()
         {
@@ -130,7 +137,7 @@ namespace IO
             for (int i = 0; i < sizeOfPopulation; i++)
             {
                 SwapRandomGenesxTimes(100, i);
-                excel.WriteToColumnFromArrayInts(startingRow, endingRow, kolumnazUszeregowaniem, uszeregowanieInt, uszeregowanieInt.Count());
+                excel.WriteToColumnFromArrayInts(startingRow, endingRow, kolumnazUszeregowaniem, uszeregowanieInt.ToList(), uszeregowanieInt.Count());
                 excel.ReadCellAsInt(rowOfSumExcel, colOfSumExcel);
                 population.Add(SwapRandomGenesxTimes(20, i).ToArray(), excel.ReadCellAsInt(rowOfSumExcel, colOfSumExcel));
             }
@@ -138,7 +145,7 @@ namespace IO
 
         public void PopulateColumn()
         {
-            excel.WriteToColumnFromArrayInts(startingRow, endingRow, kolumnazUszeregowaniem, uszeregowanieInt, uszeregowanieInt.Length);
+            excel.WriteToColumnFromArrayInts(startingRow, endingRow, kolumnazUszeregowaniem, uszeregowanieInt.ToList(), uszeregowanieInt.Length);
         }
 
         public void SelectionRouletteWheel()
@@ -146,11 +153,18 @@ namespace IO
             int sumOfFitness = 0;
             double probability = 0;
             double sumOfProbabilities = 0;
+            int numberInPopulation = 0;
+            selectedParent1 = new int[uszeregowanieInt.Length];
+            selectedParent2 = new int[uszeregowanieInt.Length];
             List<double> probabilities = new List<double>();
             List<double> cumulatedProbabilities = new List<double>();
             Dictionary<int[], Dictionary<int, double>> populationWithProbabilities = new Dictionary<int[], Dictionary<int, double>>();
-            int[] selectedParent1 = new int[population.Count];
-            int[] selectedParent2 = new int[population.Count];
+            //int[] selectedParent1 = new int[uszeregowanieInt.Length];
+            //int[] selectedParent2 = new int[uszeregowanieInt.Length];
+            //PopulateColumnReadSum pcrs;
+            //PopulateColumnReadSum pcrs1= new PopulateColumnReadSum(excel.WriteToColumnFromArrayInts);
+            //PopulateColumnReadSum pcrs2;
+
 
 
             foreach (var individual in population)
@@ -169,7 +183,7 @@ namespace IO
 
             probabilities.Sort();
 
-            for(int i = 0; i < probabilities.Count; i++)
+            for (int i = 0; i < probabilities.Count; i++)
             {
                 sumOfProbabilities += probabilities[i];
                 cumulatedProbabilities.Add(sumOfProbabilities);
@@ -182,37 +196,75 @@ namespace IO
             //var sortedDictionary = population.Values.ToList();
             //sortedDictionary.Sort();
 
-            for(int i=0; i< population.Count; i++)
+            for (int i = 0; i < population.Count; i++)
             {
                 var tempDict = new Dictionary<int, double>();
                 tempDict.Add(sortedDictionary.ElementAt(i).Value, cumulatedProbabilities[i]);
                 populationWithProbabilities.Add(population.ElementAt(i).Key, tempDict);
             }
 
-            for(int i=0; i<sizeOfPopulation; i++)
-            {         
-                    Random rnd = new Random();
-                    double number = rnd.NextDouble();
-                    for(int individual=0; i<population.Count-2; individual++)
+            for (int i = 0; i < sizeOfPopulation / 2; i++)
+            {
+                Random rnd = new Random();
+                double number = rnd.NextDouble();
+                for (int individual = 0; individual < (sizeOfPopulation - 2); individual++)
+                {
+                    var helper = cumulatedProbabilities[individual]; //inaczej nie da się wyrzucić probabilities[i] z funckji niżej
+                    var variable = populationWithProbabilities.ElementAt(individual).Value.TryGetValue(sortedDictionary.ElementAt(individual).Value, out helper);
+                    var helper2 = cumulatedProbabilities[individual + 1];
+                    var variable2 = populationWithProbabilities.ElementAt(individual + 1).Value.TryGetValue(sortedDictionary.ElementAt(individual + 1).Value, out helper2);
+                    if (number >= helper && number < helper2)
                     {
-                        var helper = cumulatedProbabilities[individual]; //inaczej nie da się wyrzucić probabilities[i] z funckji niżej
-                        var variable = populationWithProbabilities.ElementAt(i).Value.TryGetValue(sortedDictionary.ElementAt(i).Value, out helper);
-                        var helper2 = cumulatedProbabilities[individual + 1];
-                        var variable2 = populationWithProbabilities.ElementAt(i).Value.TryGetValue(sortedDictionary.ElementAt(i).Value, out helper2);
-                        if (number >= helper && number < helper2)
+                        for (int ite = 0; ite < uszeregowanieInt.Length; ite++)
                         {
-                            for(int ite = 0; ite< populationWithProbabilities.Count; ite++)
-                            {
-                                selectedParent1[ite] = populationWithProbabilities.ElementAt(individual).Key[ite];
-                            }
+                            selectedParent1[ite] = Convert.ToInt32(populationWithProbabilities.ElementAt(individual).Key[ite]);
                         }
+                        population.Remove(population.ElementAt(numberInPopulation).Key);
+                        population.Add(selectedParent1.ToArray(), excel.WriteToColumnFromArrayIntsAndReadSum(startingRow, endingRow, kolumnazUszeregowaniem, colOfSumExcel, selectedParent1.ToList(), selectedParent1.Length));
+                        minSum = population.OrderBy(x => x.Value).First().Value;
+                        minSumOrder = population.OrderBy(x => x.Value).First().Key;
+                        numberInPopulation++;
+                        break;
                     }
+                }
             }
 
+            for (int i = 0; i < sizeOfPopulation / 2; i++)
+            {
+                Random rnd = new Random();
+                double number = rnd.NextDouble();
+                Random rnd2 = new Random(i + 27);
+                double number2 = rnd2.NextDouble();
+                for (int individual = 0; individual < population.Count - 2; individual++)
+                {
+                    var helper = cumulatedProbabilities[individual]; //inaczej nie da się wyrzucić probabilities[i] z funckji niżej
+                    var variable = populationWithProbabilities.ElementAt(individual).Value.TryGetValue(sortedDictionary.ElementAt(individual).Value, out helper);
+                    var helper2 = cumulatedProbabilities[individual + 1];
+                    var variable2 = populationWithProbabilities.ElementAt(individual + 1).Value.TryGetValue(sortedDictionary.ElementAt(individual + 1).Value, out helper2);
+                    if (number2 >= helper && number < helper2)
+                    {
+                        for (int ite = 0; ite < uszeregowanieInt.Length; ite++)
+                        {
+                            selectedParent2[ite] = populationWithProbabilities.ElementAt(individual).Key[ite];
 
-
+                        }
+                        population.Remove(population.ElementAt(numberInPopulation).Key);
+                        population.Add(selectedParent2.ToArray(), excel.WriteToColumnFromArrayIntsAndReadSum(startingRow, endingRow, kolumnazUszeregowaniem, colOfSumExcel, selectedParent2.ToList(), selectedParent1.Length));
+                        minSum = population.OrderBy(x => x.Value).First().Value;
+                        minSumOrder = population.OrderBy(x => x.Value).First().Key;
+                        numberInPopulation++;
+                        break;
+                    }
+                }
+            }
         }
+       
+        
 
+        public void excelQuit()
+        {
+            excel.Quit();
+        }
         
 
 

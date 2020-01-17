@@ -23,12 +23,14 @@ namespace IO
             //this.ws = 1;
             wb = excel.Workbooks.Open(path);
             ws = wb.Worksheets[sheet];
+            excel.Visible = true;
         }
 
         public Excel(string path, int sheet)
         {
             wb = excel.Workbooks.Open(path);
             ws = wb.Worksheets[sheet];
+            excel.Visible = true;
         }
 
         public string ReadCellAsString(int row, int col)
@@ -96,7 +98,7 @@ namespace IO
             }
         }
 
-        public void WriteToColumnFromArrayInts(int startingRow, int endingRow, int col, int[] array, int sizeOfArray)
+        public void WriteToColumnFromArrayInts(int startingRow, int endingRow, int col, List<int> array, int sizeOfArray)
         {
 
             if (startingRow <= endingRow)
@@ -106,6 +108,26 @@ namespace IO
                     ws.Cells[i + startingRow, col].Value2 = Convert.ToString(array[i]);
                 }
             }
+        }
+
+        public int WriteToColumnFromArrayIntsAndReadSum(int startingRow, int endingRow, int col, int colSum, List<int> array, int sizeOfArray)
+        {
+
+            if (startingRow <= endingRow)
+            {
+                for (int i = 0; i < sizeOfArray; i++)
+                {
+                    ws.Cells[i + startingRow, col].Value2 = Convert.ToString(array[i]);
+                }
+            }
+
+            if (ws.Cells[endingRow, col].Value2 != null)
+            {
+                return (int)ws.Cells[endingRow, colSum].Value2;
+            }
+            else
+                return 1000;
+
         }
 
 
@@ -128,6 +150,11 @@ namespace IO
         public void UnprotectSheet()
         {
             ws.Unprotect();
+        }
+
+        public void Quit()
+        {
+            excel.Quit();
         }
     }
 }
