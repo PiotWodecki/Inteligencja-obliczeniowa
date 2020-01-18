@@ -58,8 +58,6 @@ namespace IO
 
         public void WriteToCellInt(int row, int col, int value)
         {
-            row++;
-            col++;
             ws.Cells[row, col].Value2 = value.ToString();
         }
 
@@ -127,8 +125,9 @@ namespace IO
             }
             else
                 return 1000;
-
         }
+
+        
 
 
 

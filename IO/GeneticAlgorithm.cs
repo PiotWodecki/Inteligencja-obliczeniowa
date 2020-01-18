@@ -34,7 +34,7 @@ namespace IO
             kolumnazUszeregowaniem = 10;
             startingRow = 3;
             endingRow = 69;
-            sizeOfPopulation = 10;
+            sizeOfPopulation = 20;
             uszeregowanie = new ArrayList();
             population = new Dictionary<int[], int>();
             rowOfSumExcel = 69;
@@ -56,21 +56,6 @@ namespace IO
                 uszeregowanieInt[i] = Convert.ToInt32(uszeregowanie[i]);
             }
         }
-
-        //public void changeArray()
-        //{
-        //    for(int i =0; i< uszeregowanie.Count; i++)
-        //    {
-        //        int zmiana = Convert.ToInt32(uszeregowanie[i]) + 1;
-        //        uszeregowanie[i]=0;
-        //    }
-        //}
-
-        //public void WriteToColumn()
-        //{
-        //    changeArray();
-        //    excel.WriteToColumnFromArray(startingRow, endingRow, kolumnazUszeregowaniem,  uszeregowanie);
-        //}
 
         public void CloseExcel()
         {
@@ -98,8 +83,8 @@ namespace IO
 
             do
             {
-                random1 = rnd.Next(startingRow + 1, endingRow);
-                random2 = rnd.Next(startingRow + 1, endingRow);
+                random1 = rnd.Next(startingRow -3, endingRow -3); //startingRow + 1, endingRow
+                random2 = rnd.Next(startingRow -3, endingRow -3); //startingRow + 1, endingRow
             } while (random1 != random2);
 
             tmp = uszeregowanieInt[random1];
@@ -121,15 +106,15 @@ namespace IO
             {
                 do
                 {
-                    random1 = rnd.Next(startingRow - 3, endingRow - 4);
-                    random2 = rnd2.Next(startingRow - 3, endingRow - 4);
+                    random1 = rnd.Next(startingRow - 3, endingRow - 3); //startingRow - 3, endingRow - 4
+                    random2 = rnd2.Next(startingRow - 3, endingRow - 3); //startingRow - 3, endingRow - 4
                 } while (random1 == random2);
 
                 tmp = temp[random1];
                 temp[random1] = temp[random2];
                 temp[random2] = tmp;
 
-                tmp = uszeregowanieInt[random1];
+                tmp = uszeregowanieInt[random1]; //tutaj rpzekazujemy przez wartość nie przez referencje
                 uszeregowanieInt[random1] = uszeregowanieInt[random2];
                 uszeregowanieInt[random2] = tmp;
             }
@@ -140,10 +125,10 @@ namespace IO
         {
             for (int i = 0; i < sizeOfPopulation; i++)
             {
-                SwapRandomGenesxTimes(100, i);
+                SwapRandomGenesxTimes(100, i); //??
                 excel.WriteToColumnFromArrayInts(startingRow, endingRow, kolumnazUszeregowaniem, uszeregowanieInt.ToList(), uszeregowanieInt.Count());
-                excel.ReadCellAsInt(rowOfSumExcel, colOfSumExcel);
-                population.Add(SwapRandomGenesxTimes(20, i).ToArray(), excel.ReadCellAsInt(rowOfSumExcel, colOfSumExcel));
+                //excel.ReadCellAsInt(rowOfSumExcel, colOfSumExcel);
+                population.Add(SwapRandomGenesxTimes(20, i).ToArray(), excel.ReadCellAsInt(rowOfSumExcel, colOfSumExcel));//????
             }
         }
 
@@ -163,42 +148,27 @@ namespace IO
             List<double> probabilities = new List<double>();
             List<double> cumulatedProbabilities = new List<double>();
             Dictionary<int[], Dictionary<int, double>> populationWithProbabilities = new Dictionary<int[], Dictionary<int, double>>();
-            //int[] selectedParent1 = new int[uszeregowanieInt.Length];
-            //int[] selectedParent2 = new int[uszeregowanieInt.Length];
-            //PopulateColumnReadSum pcrs;
-            //PopulateColumnReadSum pcrs1= new PopulateColumnReadSum(excel.WriteToColumnFromArrayInts);
-            //PopulateColumnReadSum pcrs2;
-
-
 
             foreach (var individual in population)
             {
                 sumOfFitness += individual.Value;
             }
 
-            foreach (var individual in population)
+            foreach (var individual in population) //prawdopodobieństwa
             {
                 probability = (sumOfProbabilities + ((double)individual.Value / sumOfFitness));
-                //sumOfProbabilities += probability;
                 probabilities.Add(probability);
             }
 
-            //var sortedDictionary = new Dictionary<int, double>();
-
             probabilities.Sort();
 
-            for (int i = 0; i < probabilities.Count; i++)
+            for (int i = 0; i < probabilities.Count; i++) //kumulacja
             {
                 sumOfProbabilities += probabilities[i];
                 cumulatedProbabilities.Add(sumOfProbabilities);
             }
-            //foreach(KeyValuePair<int[], int> individual in population.OrderByDescending(key => key.Value)
-            //{
-            //    sortedDictionary.Add(individual.Value);
-            //}
+
             var sortedDictionary = population.OrderByDescending(key => key.Value);
-            //var sortedDictionary = population.Values.ToList();
-            //sortedDictionary.Sort();
 
             for (int i = 0; i < population.Count; i++)
             {
@@ -207,7 +177,7 @@ namespace IO
                 populationWithProbabilities.Add(population.ElementAt(i).Key, tempDict);
             }
 
-            for (int i = 0; i < sizeOfPopulation / 2; i++)
+            for (int i = 0; i < sizeOfPopulation / 2; i++) // rozkminić wielość pętli
             {
                 Random rnd = new Random();
                 double number = rnd.NextDouble();
@@ -367,16 +337,19 @@ namespace IO
         }
        
         
+        public void WriteArrayToColumnBestOrder(int startRow, int endRow, int col)
+        {
+            excel.WriteToColumnFromArrayInts(startRow, endRow, col, minSumOrder.ToList(), minSumOrder.Count());
+        }
+
+        public void WriteBestSumToCell(int row, int col)
+        {
+            excel.WriteToCellInt(row, col, minSum);
+        }
 
         public void excelQuit()
         {
             excel.Quit();
         }
-        
-
-
-
-
-
     }
 }
