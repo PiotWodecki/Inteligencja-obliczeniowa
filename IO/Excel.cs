@@ -11,6 +11,7 @@ namespace IO
 {
     class Excel
     {
+        //ta klasa służy do ogólnej obsługi excela: wyciąganie pojedynczych wartości lub całych kolumn, wpisywanie danych do excela. Otwieranie, zapisywanie, zamykanie pliku
         public string path { get; set; }
         public int sheet { get; set; }
         _Application excel = new _Excel.Application();
@@ -30,6 +31,13 @@ namespace IO
         {
             wb = excel.Workbooks.Open(path);
             ws = wb.Worksheets[sheet];
+            excel.Visible = true;
+        }
+
+        public Excel(string path)
+        {
+            wb = excel.Workbooks.Open(path);
+            ws = wb.Worksheets["NEH"];
             excel.Visible = true;
         }
 
@@ -124,12 +132,12 @@ namespace IO
                 return (int)ws.Cells[endingRow, colSum].Value2;
             }
             else
-                return 1000;
+            {
+                throw new Exception();
+            }
         }
 
-        
-
-
+       
 
         public void Save()
         {

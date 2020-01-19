@@ -25,30 +25,30 @@ namespace IO
         public int[] minSumOrder { get; set; }
         public int minSum { get; set; }
         public Dictionary<int[], int> population { get; set; }
-        Excel excel = new Excel(@"E:\studia\V semestr\IO\Algorytmy genetyczne\genetykcs5.xls", 1);
-        public delegate int PopulateColumnReadSum(int start, int end, int column, int[] ar, int arCount);
+        Excel excel = new Excel(@"E:\studia\V semestr\IO\Algorytmy genetyczne\genetykcs5.xls", 1); //tutaj wpisujemy ścieżkę do pliku z przygotowanym arkuszem pod algorytm genetyczny oraz numer arkusza (pierwsza ma indeks 1)
+        //public delegate int PopulateColumnReadSum(int start, int end, int column, int[] ar, int arCount);
         Random random = new Random();
 
         public GeneticAlgorithm()
         {
-            kolumnazUszeregowaniem = 10;
-            startingRow = 3;
-            endingRow = 69;
-            sizeOfPopulation = 20;
+            kolumnazUszeregowaniem = 10; //kolumna z której pobieramy nasze uszeregowanie
+            startingRow = 3; //wiersz w którym zaczynają się nasze dane(nie nagłówek)
+            endingRow = 69; //wiersz w którym kończą się nasze dane
+            sizeOfPopulation = 20; //wielkość populacji
             uszeregowanie = new ArrayList();
             population = new Dictionary<int[], int>();
-            rowOfSumExcel = 69;
-            colOfSumExcel = 26;
+            rowOfSumExcel = 69; //wiersz z którego pobieramy naszą sumę (wynik)
+            colOfSumExcel = 26; //kolumna z której pobieramy naszą sumę (wynik)
             minSum = 999999;
-            probabilityOfMutation = 0.1;
+            probabilityOfMutation = 0.1; //prawdopodobieństwo mutacji
         }
 
-        public void ReadOrderColumn()
+        public void ReadOrderColumn() //metoda do obsługi excela
         {
             excel.ReadColumnToArray(startingRow, endingRow, kolumnazUszeregowaniem, uszeregowanie);
         }
 
-        public void GetElementsFromListToArray()
+        public void GetElementsFromListToArray() //metoda do obsługi excela
         {
             uszeregowanieInt = new int[uszeregowanie.Count];
             for (int i = 0; i < uszeregowanie.Count; i++)
@@ -57,24 +57,24 @@ namespace IO
             }
         }
 
-        public void CloseExcel()
+        public void CloseExcel() //metoda do obsługi excela
         {
             excel.Save();
             excel.Close();
         }
 
-        public void CloseWithSaveAs(string path)
+        public void CloseWithSaveAs(string path) //metoda do obsługi excela
         {
             excel.SaveAs(path);
             excel.Close();
         }
 
-        public void Unprotect()
+        public void Unprotect() //metoda do obsługi excela
         {
             excel.UnprotectSheet();
         }
 
-        public void SwapRandomGenes(int startingRow, int endingRow, int col) //starting and ending row in excel
+        public void SwapRandomGenes(int startingRow, int endingRow, int col) //metodą do zamiany genów  //starting and ending row in excel
         {
             Random rnd = new Random();
             int random1;
@@ -92,7 +92,7 @@ namespace IO
             uszeregowanieInt[random2] = tmp;
         }
 
-        public int[] SwapRandomGenesxTimes(int xTimes, int seed) //starting and ending row in excel
+        public int[] SwapRandomGenesxTimes(int xTimes, int seed) //metoda do zaminy genów x razy //starting and ending row in excel
         {
             Random rnd = new Random(seed);
             Random rnd2 = new Random(seed + 67);
@@ -106,8 +106,8 @@ namespace IO
             {
                 do
                 {
-                    random1 = rnd.Next(startingRow - 3, endingRow - 3); //startingRow - 3, endingRow - 4
-                    random2 = rnd2.Next(startingRow - 3, endingRow - 3); //startingRow - 3, endingRow - 4
+                    random1 = rnd.Next(startingRow - 3, endingRow - 3);
+                    random2 = rnd2.Next(startingRow - 3, endingRow - 3); 
                 } while (random1 == random2);
 
                 tmp = temp[random1];
@@ -121,23 +121,22 @@ namespace IO
             return temp;
         }
 
-        public void PopulatePopulation()
+        public void PopulatePopulation() //tworzenie pierwszej losowej populacji
         {
             for (int i = 0; i < sizeOfPopulation; i++)
             {
-                SwapRandomGenesxTimes(100, i); //??
+                SwapRandomGenesxTimes(100, i); 
                 excel.WriteToColumnFromArrayInts(startingRow, endingRow, kolumnazUszeregowaniem, uszeregowanieInt.ToList(), uszeregowanieInt.Count());
-                //excel.ReadCellAsInt(rowOfSumExcel, colOfSumExcel);
-                population.Add(SwapRandomGenesxTimes(20, i).ToArray(), excel.ReadCellAsInt(rowOfSumExcel, colOfSumExcel));//????
+                population.Add(SwapRandomGenesxTimes(20, i).ToArray(), excel.ReadCellAsInt(rowOfSumExcel, colOfSumExcel));
             }
         }
 
-        public void PopulateColumn()
+        public void PopulateColumn() //wypełnianie kolumny
         {
             excel.WriteToColumnFromArrayInts(startingRow, endingRow, kolumnazUszeregowaniem, uszeregowanieInt.ToList(), uszeregowanieInt.Length);
         }
 
-        public void SelectionRouletteWheel()
+        public void SelectionRouletteWheel() //ruletka
         {
             int sumOfFitness = 0;
             double probability = 0;
@@ -177,7 +176,7 @@ namespace IO
                 populationWithProbabilities.Add(population.ElementAt(i).Key, tempDict);
             }
 
-            for (int i = 0; i < sizeOfPopulation / 2; i++) // rozkminić wielość pętli
+            for (int i = 0; i < sizeOfPopulation / 2; i++) 
             {
                 Random rnd = new Random();
                 double number = rnd.NextDouble();
@@ -236,7 +235,7 @@ namespace IO
             }
         }
 
-        public void MakingChilds()
+        public void MakingChilds() //tworzenie dzieci
         {
             int currentIndex = 0;
             int[] tmpChild;
@@ -276,7 +275,7 @@ namespace IO
                     j++;
                 }
 
-                if(random.NextDouble() < probabilityOfMutation)
+                if(random.NextDouble() < probabilityOfMutation) //mutacja dziecka pierwszego
                 {
                     int tmpRand = random.Next(startingRow, endingRow - 3);
                     int tmpRand2 = random.Next(startingRow, endingRow - 3);
@@ -312,7 +311,7 @@ namespace IO
                     j++;
                 }
 
-                if (random.NextDouble() < probabilityOfMutation)
+                if (random.NextDouble() < probabilityOfMutation) //mutacja dziecka drugiego
                 {
                     int tmpRand = random.Next(startingRow, endingRow - 3);
                     int tmpRand2 = random.Next(startingRow, endingRow - 3);
@@ -337,17 +336,17 @@ namespace IO
         }
        
         
-        public void WriteArrayToColumnBestOrder(int startRow, int endRow, int col)
+        public void WriteArrayToColumnBestOrder(int startRow, int endRow, int col) //wpisanie do kolumny najlpeszego ułożenia
         {
             excel.WriteToColumnFromArrayInts(startRow, endRow, col, minSumOrder.ToList(), minSumOrder.Count());
         }
 
-        public void WriteBestSumToCell(int row, int col)
+        public void WriteBestSumToCell(int row, int col) //wpisanie najlepszej sumy
         {
             excel.WriteToCellInt(row, col, minSum);
         }
 
-        public void excelQuit()
+        public void excelQuit() //metoda do obsługi excela
         {
             excel.Quit();
         }
