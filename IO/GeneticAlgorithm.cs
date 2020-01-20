@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace IO
@@ -25,20 +26,20 @@ namespace IO
         public int[] minSumOrder { get; set; }
         public int minSum { get; set; }
         public Dictionary<int[], int> population { get; set; }
-        Excel excel = new Excel(@"E:\studia\V semestr\IO\Algorytmy genetyczne\genetykcs5.xls", 1); //tutaj wpisujemy ścieżkę do pliku z przygotowanym arkuszem pod algorytm genetyczny oraz numer arkusza (pierwsza ma indeks 1)
+        Excel excel = new Excel(@"E:\studia\V semestr\IO\Dane_sprawko2\Dane_S2_100_20DOBRA_WSPINACZKAAutomatycznie-odzyskany", "Arkusz1"); //tutaj wpisujemy ścieżkę do pliku z przygotowanym arkuszem pod algorytm genetyczny oraz numer arkusza (pierwsza ma indeks 1)
         //public delegate int PopulateColumnReadSum(int start, int end, int column, int[] ar, int arCount);
         Random random = new Random();
 
         public GeneticAlgorithm()
         {
-            kolumnazUszeregowaniem = 10; //kolumna z której pobieramy nasze uszeregowanie
-            startingRow = 3; //wiersz w którym zaczynają się nasze dane(nie nagłówek)
-            endingRow = 69; //wiersz w którym kończą się nasze dane
-            sizeOfPopulation = 20; //wielkość populacji
+            kolumnazUszeregowaniem = 24; //kolumna z której pobieramy nasze uszeregowanie
+            startingRow = 2; //wiersz w którym zaczynają się nasze dane(nie nagłówek)
+            endingRow = 101; //wiersz w którym kończą się nasze dane
+            sizeOfPopulation = 10; //wielkość populacji
             uszeregowanie = new ArrayList();
             population = new Dictionary<int[], int>();
-            rowOfSumExcel = 69; //wiersz z którego pobieramy naszą sumę (wynik)
-            colOfSumExcel = 26; //kolumna z której pobieramy naszą sumę (wynik)
+            rowOfSumExcel = 101; //wiersz z którego pobieramy naszą sumę (wynik)
+            colOfSumExcel = 67; //kolumna z której pobieramy naszą sumę (wynik)
             minSum = 999999;
             probabilityOfMutation = 0.1; //prawdopodobieństwo mutacji
         }
@@ -83,8 +84,8 @@ namespace IO
 
             do
             {
-                random1 = rnd.Next(startingRow -3, endingRow -3); //startingRow + 1, endingRow
-                random2 = rnd.Next(startingRow -3, endingRow -3); //startingRow + 1, endingRow
+                random1 = rnd.Next(0, endingRow -2); //startingRow + 1, endingRow
+                random2 = rnd.Next(0, endingRow -2); //startingRow + 1, endingRow
             } while (random1 != random2);
 
             tmp = uszeregowanieInt[random1];
@@ -94,8 +95,8 @@ namespace IO
 
         public int[] SwapRandomGenesxTimes(int xTimes, int seed) //metoda do zaminy genów x razy //starting and ending row in excel
         {
-            Random rnd = new Random(seed);
-            Random rnd2 = new Random(seed + 67);
+            Random rnd = new Random();
+            //Random rnd2 = new Random(seed + 67);
             int random1;
             int random2;
             int tmp;
@@ -106,8 +107,9 @@ namespace IO
             {
                 do
                 {
-                    random1 = rnd.Next(startingRow - 3, endingRow - 3);
-                    random2 = rnd2.Next(startingRow - 3, endingRow - 3); 
+                    random1 = rnd.Next(0, endingRow - 2);
+                   // Thread.Sleep(100); //random działa na podstawie zegara - usypiając program na 100ms wylosowane liczby powinny być bardziej rozbieżne
+                    random2 = rnd.Next(0, endingRow - 2); 
                 } while (random1 == random2);
 
                 tmp = temp[random1];
@@ -128,6 +130,12 @@ namespace IO
                 SwapRandomGenesxTimes(100, i); 
                 excel.WriteToColumnFromArrayInts(startingRow, endingRow, kolumnazUszeregowaniem, uszeregowanieInt.ToList(), uszeregowanieInt.Count());
                 population.Add(SwapRandomGenesxTimes(20, i).ToArray(), excel.ReadCellAsInt(rowOfSumExcel, colOfSumExcel));
+            }
+
+            if (minSum > population.OrderBy(x => x.Value).First().Value)
+            {
+                minSum = population.OrderBy(x => x.Value).First().Value;
+                minSumOrder = population.OrderBy(x => x.Value).First().Key;
             }
         }
 
@@ -194,8 +202,8 @@ namespace IO
                         }
                         population.Remove(population.ElementAt(numberInPopulation).Key);
                         population.Add(selectedParent1.ToArray(), excel.WriteToColumnFromArrayIntsAndReadSum(startingRow, endingRow, kolumnazUszeregowaniem, colOfSumExcel, selectedParent1.ToList(), selectedParent1.Length));
-                        minSum = population.OrderBy(x => x.Value).First().Value;
-                        minSumOrder = population.OrderBy(x => x.Value).First().Key;
+                        //minSum = population.OrderBy(x => x.Value).First().Value;
+                        //minSumOrder = population.OrderBy(x => x.Value).First().Key;
                         numberInPopulation++;
                         break;
                     }
@@ -260,16 +268,17 @@ namespace IO
 
                 for (int ite = 0; ite < population.ElementAt(currentIndex).Key.Count(); ite++)
                 {
-                    int i = 0;
-                    if (!tmpChild.Contains(population.ElementAt(currentIndex + 1).Key[ite]))
+                    bool a = Array.Exists(tmpChild, element => element == population.ElementAt(currentIndex + 1).Key[ite]);
+                    //if (tmpChild.(population.ElementAt(currentIndex + 1).Key[ite]))
+                    if(!a)
                     {
-                        valuesFromParent2.Insert(i, population.ElementAt(currentIndex + 1).Key[ite]);
-                        i++;
+                        valuesFromParent2.Add(population.ElementAt(currentIndex + 1).Key[ite]);
                     }
+                        
                 }
 
                 int j = 0;
-                for (int i = crossoverPoint + 1; i < endingRow - 2; i++)
+                for (int i = crossoverPoint + 1; i < endingRow - 1; i++)
                 {
                     tmpChild[i] = valuesFromParent2[j];
                     j++;
@@ -277,8 +286,8 @@ namespace IO
 
                 if(random.NextDouble() < probabilityOfMutation) //mutacja dziecka pierwszego
                 {
-                    int tmpRand = random.Next(startingRow, endingRow - 3);
-                    int tmpRand2 = random.Next(startingRow, endingRow - 3);
+                    int tmpRand = random.Next(0, endingRow - 2);
+                    int tmpRand2 = random.Next(0, endingRow - 2);
 
                     int tmp = tmpChild[tmpRand];
                     tmpChild[tmpRand] = tmpChild[tmpRand2];
@@ -305,7 +314,7 @@ namespace IO
                 }
 
                 j = 0;
-                for (int i = crossoverPoint + 1; i < endingRow - 2; i++)
+                for (int i = crossoverPoint + 1; i <= endingRow - 2; i++)
                 {
                     tmpChild2[i] = valuesFromParent1[j];
                     j++;

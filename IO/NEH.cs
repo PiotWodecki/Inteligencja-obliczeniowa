@@ -11,7 +11,7 @@ namespace IO
     {
         //sortujemy plik w excelu!!!! plik wejściowy jest już posortowany!
 
-        Excel excel = new Excel(@"E:\studia\V semestr\IO\Sprawozdanie2\NEH\Dane_S2_50_10DOBRA_WSPINACZKA (1).xlsm"); //tutaj należy wpisać ścieżkę do pliku który chcemy otworzyć
+        Excel excel = new Excel(@"E:\studia\V semestr\IO\Dane_sprawko2\Dane_S2_200_20DOBRA_WSPINACZKA.xlsm"); //tutaj należy wpisać ścieżkę do pliku który chcemy otworzyć
 
         public int kolumnazUszeregowaniem { get; set; }
         public int startingRow { get; set; }
@@ -26,12 +26,12 @@ namespace IO
 
         public NEH()
         {
-            kolumnazUszeregowaniem = 14; //kolumna w której wpisujemy uszeregowanie (tabela środkowa)
+            kolumnazUszeregowaniem = 24; //kolumna w której wpisujemy uszeregowanie (tabela środkowa)
             startingRow = 2; //wiersz w którym jest pierwsza wartość (nie nagłówek)
-            endingRow = 51; //wiersz w którym kończą się wartośći
+            endingRow = 201; //wiersz w którym kończą się wartośći
             uszeregowanie = new List<int>();
             posortowaneUszeregowanie = new ArrayList();
-            colOfSumExcel = 37; //kolumna z której zczytujemy sumy (ostatnia tabela)
+            colOfSumExcel = 67; //kolumna z której zczytujemy sumy (ostatnia tabela)
             tmpSum = 0;
             currentRow = 3;
             iloscZadan = 50; //ilość zadań w pliku

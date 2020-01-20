@@ -41,6 +41,13 @@ namespace IO
             excel.Visible = true;
         }
 
+        public Excel(string excelPath, string worksheet)
+        {
+            wb = excel.Workbooks.Open(excelPath);
+            ws = wb.Worksheets[worksheet];
+            excel.Visible = true;
+        }
+
         public string ReadCellAsString(int row, int col)
         {
             row++;
